@@ -82,8 +82,8 @@ export default function ShoesPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((product) => (
             <div
-              key={`${product.brand}-${product.name}-${product.image}`}
-              className={`border rounded-2xl p-4 shadow hover:shadow-md transition ${
+            key={product.url}
+            className={`border rounded-2xl p-4 shadow hover:shadow-md transition ${
                 product.has_error ? 'bg-red-900 text-white' : 'bg-white'
               }`}
             >

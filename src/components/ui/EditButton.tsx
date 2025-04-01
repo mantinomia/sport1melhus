@@ -20,7 +20,7 @@ export const EditButton = ({ product }: Props) => {
     const { name, value } = e.target
     setForm(prev => ({
       ...prev,
-      [name]: name === 'price' ? parseInt(value) : value,
+      [name]: name === 'price' ? parseInt(value) || 0 : value,
     }))
   }
 

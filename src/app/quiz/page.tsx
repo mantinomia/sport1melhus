@@ -10,7 +10,7 @@ import clsx from 'clsx'
 
 const genders: Product['gender'][] = ['herre', 'dame', 'barn', 'junior', 'unisex', 'alle']
 
-type QuestionType = 'guessNameFromImage' | 'guessPrice' | 'guessNameFromDescription'
+type QuestionType = 'guessNameFromImage' | 'guessPrice'
 
 export default function QuizPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -43,11 +43,7 @@ export default function QuizPage() {
     if (products.length === 0) return
 
     const pickRandom = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
-    const randomType: QuestionType = pickRandom([
-      'guessNameFromImage',
-      'guessPrice',
-      'guessNameFromDescription',
-    ])
+    const randomType: QuestionType = pickRandom(['guessNameFromImage', 'guessPrice'])
 
     const correct = pickRandom(products)
     let opts: string[] = []
@@ -59,10 +55,8 @@ export default function QuizPage() {
       opts = generatePriceOptions(price)
     } else {
       answer = `${correct.brand} ${correct.name}`
-      const decoys = products
-        .filter(p => p.name !== correct.name)
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 3)
+      const sameBrand = products.filter(p => p.brand === correct.brand && p.name !== correct.name)
+      const decoys = sameBrand.sort(() => 0.5 - Math.random()).slice(0, 3)
       opts = [answer, ...decoys.map(d => `${d.brand} ${d.name}`)]
     }
 
@@ -112,23 +106,19 @@ export default function QuizPage() {
         </select>
       </div>
 
-      {/* Product URL */}
       <div className="mb-3 text-sm text-center text-blue-400">
-        <a
-          href={`https://www.sport1.no/${currentProduct.brand
-            .toLowerCase()
-            .replace(/\s/g, '-')}-${currentProduct.name
-            .toLowerCase()
-            .replace(/\s/g, '-')}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline"
-        >
-          View product on Sport1.no
-        </a>
+        {currentProduct.url && (
+          <a
+            href={currentProduct.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            View product on Sport1.no
+          </a>
+        )}
       </div>
 
-      {/* Question content */}
       {questionType === 'guessNameFromImage' && (
         <>
           <p className="mb-2 text-center">What shoe is this?</p>
@@ -162,47 +152,36 @@ export default function QuizPage() {
         </>
       )}
 
-      {questionType === 'guessNameFromDescription' && (
-        <>
-          <p className="mb-2 text-center">Which shoe fits this description?</p>
-          <blockquote className="italic text-sm mb-4 border-l-4 border-gray-300 pl-3 text-center max-w-sm">
-            {currentProduct.description}
-          </blockquote>
-          <EditButton product={currentProduct} />
-        </>
-      )}
+      <div className="grid gap-3 mt-2 w-full max-w-xs">
+        {options.map((opt, index) => {
+          const isCorrect = opt === correctAnswer
+          const isSelected = selected === opt
 
-<div className="grid gap-3 mt-2 w-full max-w-xs">
-  {options.map((opt, index) => {
-    const isCorrect = opt === correctAnswer
-    const isSelected = selected === opt
+          const feedback =
+            selected !== null
+              ? isCorrect
+                ? 'ring-2 ring-green-500'
+                : isSelected
+                ? 'ring-2 ring-red-500'
+                : ''
+              : ''
 
-    const feedback =
-      selected !== null
-        ? isCorrect
-          ? 'ring-2 ring-green-500'
-          : isSelected
-          ? 'ring-2 ring-red-500'
-          : ''
-        : ''
-
-    return (
-      <Button
-        key={`${opt}-${index}`}
-        variant="outline"
-        disabled={selected === correctAnswer}
-        onClick={() => handleAnswer(opt)}
-        className={clsx(
-          'w-full py-3 text-sm sm:text-base text-white transition-all',
-          feedback
-        )}
-      >
-        {questionType === 'guessPrice' ? `${opt} kr` : opt}
-      </Button>
-    )
-  })}
-</div>
-
+          return (
+            <Button
+              key={`${opt}-${index}`}
+              variant="outline"
+              disabled={selected === correctAnswer}
+              onClick={() => handleAnswer(opt)}
+              className={clsx(
+                'w-full py-3 text-sm sm:text-base text-white transition-all',
+                feedback
+              )}
+            >
+              {questionType === 'guessPrice' ? `${opt} kr` : opt}
+            </Button>
+          )
+        })}
+      </div>
     </div>
   )
 }
